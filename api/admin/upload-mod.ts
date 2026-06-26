@@ -1,7 +1,5 @@
-import { put } from '@vercel/blob';
 import fs from 'fs';
 import path from 'path';
-import formidable from 'formidable';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const MOD_INFO_FILE = path.join(DATA_DIR, 'mod-info.json');
@@ -38,12 +36,6 @@ function writeModInfo(data) {
 
 const ADMIN_TOKEN = 'admin-session-token';
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
 export default async function handler(req, res) {
   // Verify admin authentication
   const authHeader = req.headers.authorization || '';
@@ -57,35 +49,21 @@ export default async function handler(req, res) {
   }
 
   try {
-    const form = formidable({ maxFileSize: 10 * 1024 * 1024 });
+    const { downloadUrl } = req.body;
     
-    const [fields, files] = await form.parse(req);
-    const file = files.modFile?.[0];
-    
-    if (!file) {
-      return res.status(400).json({ error: 'No file uploaded' });
+    if (!downloadUrl) {
+      return res.status(400).json({ error: 'Download URL is required' });
     }
 
-    // Read file and upload to Vercel Blob
-    const fileBuffer = fs.readFileSync(file.filepath);
-    
-    const blob = await put(`donutsmp-mod-${Date.now()}.jar`, fileBuffer, {
-      access: 'public',
-      contentType: 'application/java-archive',
-    });
-
-    // Clean up temp file
-    fs.unlinkSync(file.filepath);
-
-    // Update mod_info with new download URL
+    // Update mod_info with the download URL
     const modInfo = readModInfo();
-    modInfo.download_url = blob.url;
+    modInfo.download_url = downloadUrl;
     writeModInfo(modInfo);
     
-    res.status(200).json({ downloadUrl: blob.url, filename: blob.url });
-  } catch (error) {
+    res.status(200).json({ downloadUrl, filename: downloadUrl });
+  } catch (error: any) {
     console.error('Upload error:', error);
-    res.status(500).json({ error: 'Failed to upload file' });
+    res.status(500).json({ error: 'Failed to update download URL: ' + error.message });
   }
 }
 

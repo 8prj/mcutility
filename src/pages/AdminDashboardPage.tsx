@@ -46,6 +46,7 @@ export function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<"mod" | "pending" | "approved">("mod");
   const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "error">("idle");
   const [uploadStatus, setUploadStatus] = useState<"idle" | "uploading" | "success" | "error">("idle");
+  const [downloadUrlInput, setDownloadUrlInput] = useState("");
   const [loading, setLoading] = useState(true);
 
   const [form, setForm] = useState({
@@ -98,14 +99,15 @@ export function AdminDashboardPage() {
     }
   }
 
-  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  async function handleFileUpload() {
+    const url = downloadUrlInput.trim();
+    if (!url) return;
 
     setUploadStatus("uploading");
     try {
-      const result = await uploadModFile(file);
+      await uploadModFile(url);
       setUploadStatus("success");
+      setDownloadUrlInput("");
       setTimeout(() => setUploadStatus("idle"), 2000);
       // Reload mod info to get updated download URL
       loadData();
@@ -263,7 +265,7 @@ export function AdminDashboardPage() {
           {/* File Upload Section */}
           <div className="mt-8 pt-8 border-t border-[var(--mc-border)]">
             <h3 className="pixel-font text-[var(--mc-green-light)] text-xs mb-4">
-              Upload Mod File
+              Set Download URL
             </h3>
             <div className="space-y-4">
               {modInfo?.download_url && (
@@ -274,27 +276,32 @@ export function AdminDashboardPage() {
               )}
               <div>
                 <label className="block text-[var(--mc-text-muted)] text-xs mb-2 pixel-font">
-                  Select .jar file
+                  Download URL (GitHub Releases, direct link, etc.)
                 </label>
                 <input
-                  type="file"
-                  accept=".jar"
-                  onChange={handleFileUpload}
+                  type="text"
+                  value={downloadUrlInput}
+                  onChange={(e) => setDownloadUrlInput(e.target.value)}
+                  placeholder="https://github.com/..."
                   className="mc-input"
                   disabled={uploadStatus === "uploading"}
                 />
               </div>
-              {uploadStatus === "uploading" && (
-                <p className="text-[var(--mc-text-muted)] text-sm">Uploading...</p>
-              )}
+              <button
+                onClick={handleFileUpload}
+                className="mc-btn"
+                disabled={uploadStatus === "uploading" || !downloadUrlInput.trim()}
+              >
+                {uploadStatus === "uploading" ? "Updating..." : "Update Download URL"}
+              </button>
               {uploadStatus === "success" && (
                 <span className="flex items-center gap-2 text-[var(--mc-green-light)] text-sm">
                   <CheckCircle size={16} />
-                  File uploaded successfully!
+                  Download URL updated successfully!
                 </span>
               )}
               {uploadStatus === "error" && (
-                <span className="text-red-400 text-sm">Upload failed. Please try again.</span>
+                <span className="text-red-400 text-sm">Update failed. Please try again.</span>
               )}
             </div>
           </div>

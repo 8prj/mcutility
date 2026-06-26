@@ -75,10 +75,7 @@ export function updateModInfo(body: {
   });
 }
 
-export function uploadModFile(file: File) {
-  const formData = new FormData();
-  formData.append("modFile", file);
-  
+export function uploadModFile(downloadUrl: string) {
   const token = getToken();
   const headers: Record<string, string> = {};
   if (token) {
@@ -87,7 +84,10 @@ export function uploadModFile(file: File) {
   
   return fetch(`${API_BASE}/admin/upload-mod`, {
     method: "POST",
-    headers,
-    body: formData,
+    headers: {
+      ...headers,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ downloadUrl }),
   }).then((res) => res.json());
 }
