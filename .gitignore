@@ -17,6 +17,9 @@ server/
 # Data directory (created at runtime)
 data/
 
+# TypeScript API files (replaced with JS for Vercel)
+api/**/*.ts
+
 .vscode/*
 !.vscode/extensions.json
 .idea

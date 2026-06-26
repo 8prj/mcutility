@@ -33,6 +33,7 @@ export default async function handler(req, res) {
       );
       res.status(200).json(comments);
     } catch (error) {
+      console.error('GET comments error:', error);
       res.status(500).json({ error: 'Failed to read comments' });
     }
   } else if (req.method === 'POST') {
@@ -64,9 +65,16 @@ export default async function handler(req, res) {
       
       res.status(200).json(newComment);
     } catch (error) {
+      console.error('POST comment error:', error);
       res.status(500).json({ error: 'Failed to submit comment' });
     }
   } else {
     res.status(405).json({ error: 'Method not allowed' });
   }
 }
+
+export const config = {
+  api: {
+    bodyParser: true,
+  },
+};

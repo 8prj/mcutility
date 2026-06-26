@@ -34,25 +34,34 @@ function writeModInfo(data) {
   return data;
 }
 
+const ADMIN_TOKEN = 'admin-session-token';
+
 export default async function handler(req, res) {
+  console.log('Mod-info endpoint called, method:', req.method);
+  
   if (req.method === 'GET') {
     try {
       const modInfo = readModInfo();
       res.status(200).json(modInfo);
     } catch (error) {
+      console.error('GET error:', error);
       res.status(500).json({ error: 'Failed to read mod info' });
     }
   } else if (req.method === 'PUT') {
     const authHeader = req.headers.authorization || '';
     const token = authHeader.replace('Bearer ', '');
-    const ADMIN_TOKEN = 'admin-session-token';
+    
+    console.log('PUT request, token:', token);
     
     if (token !== ADMIN_TOKEN) {
+      console.log('Unauthorized');
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
     try {
-      const { name, description, version, install_instructions } = req.body;
+      const body = req.body;
+      console.log('PUT body:', body);
+      const { name, description, version, install_instructions } = body;
       const modInfo = readModInfo();
       modInfo.name = name;
       modInfo.description = description;
@@ -61,9 +70,16 @@ export default async function handler(req, res) {
       const updated = writeModInfo(modInfo);
       res.status(200).json(updated);
     } catch (error) {
+      console.error('PUT error:', error);
       res.status(500).json({ error: 'Failed to update mod info' });
     }
   } else {
     res.status(405).json({ error: 'Method not allowed' });
   }
 }
+
+export const config = {
+  api: {
+    bodyParser: true,
+  },
+};

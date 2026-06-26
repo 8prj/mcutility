@@ -15,6 +15,13 @@ export default async function handler(req, res) {
       res.status(401).json({ error: 'Invalid password' });
     }
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 }
+
+export const config = {
+  api: {
+    bodyParser: true,
+  },
+};

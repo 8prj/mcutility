@@ -37,6 +37,8 @@ function verifyAuth(req, res) {
 }
 
 export default async function handler(req, res) {
+  console.log('Admin comments endpoint called, method:', req.method);
+  
   // Verify admin authentication
   if (!verifyAuth(req, res)) {
     return;
@@ -49,6 +51,7 @@ export default async function handler(req, res) {
       );
       res.status(200).json(comments);
     } catch (error) {
+      console.error('GET admin comments error:', error);
       res.status(500).json({ error: 'Failed to read comments' });
     }
   } else if (req.method === 'PUT') {
@@ -67,6 +70,7 @@ export default async function handler(req, res) {
         res.status(404).json({ error: 'Comment not found' });
       }
     } catch (error) {
+      console.error('PUT admin comment error:', error);
       res.status(500).json({ error: 'Failed to update comment' });
     }
   } else if (req.method === 'DELETE') {
@@ -77,9 +81,16 @@ export default async function handler(req, res) {
       writeComments(filteredComments);
       res.status(200).json({ success: true });
     } catch (error) {
+      console.error('DELETE admin comment error:', error);
       res.status(500).json({ error: 'Failed to delete comment' });
     }
   } else {
     res.status(405).json({ error: 'Method not allowed' });
   }
 }
+
+export const config = {
+  api: {
+    bodyParser: true,
+  },
+};
