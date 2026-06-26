@@ -1,19 +1,18 @@
-const API_BASE = import.meta.env.VITE_API_URL || '/api';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://your-project.supabase.co';
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key';
 
 function getToken() {
   return localStorage.getItem("admin_token");
 }
 
-async function fetchJson(path: string, options?: RequestInit) {
+async function fetchJson(options?: RequestInit) {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
+    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
     ...(options?.headers as Record<string, string>),
   };
-  const token = getToken();
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-  const res = await fetch(`${API_BASE}${path}`, {
+
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/admin-api`, {
     ...options,
     headers,
   });
@@ -25,41 +24,54 @@ async function fetchJson(path: string, options?: RequestInit) {
 }
 
 export function login(password: string) {
-  return fetchJson("/login", {
+  return fetchJson({
     method: "POST",
-    body: JSON.stringify({ password }),
+    body: JSON.stringify({ action: 'login', password }),
   });
 }
 
 export function getModInfo() {
-  return fetchJson("/mod-info");
+  return fetchJson({
+    method: "POST",
+    body: JSON.stringify({ action: 'get_mod_info' }),
+  });
 }
 
 export function getApprovedComments() {
-  return fetchJson("/comments");
+  return fetchJson({
+    method: "POST",
+    body: JSON.stringify({ action: 'get_comments' }),
+  });
 }
 
 export function submitComment(username: string, comment: string) {
-  return fetchJson("/comments", {
+  return fetchJson({
     method: "POST",
-    body: JSON.stringify({ username, comment }),
+    body: JSON.stringify({ action: 'submit_comment', username, comment }),
   });
 }
 
 export function getAllComments() {
-  return fetchJson("/admin/comments");
+  const token = getToken();
+  return fetchJson({
+    method: "POST",
+    body: JSON.stringify({ action: 'get_all_comments', token }),
+  });
 }
 
 export function updateCommentStatus(id: string, status: "approved" | "pending") {
-  return fetchJson(`/admin/comments/${id}`, {
-    method: "PUT",
-    body: JSON.stringify({ status }),
+  const token = getToken();
+  return fetchJson({
+    method: "POST",
+    body: JSON.stringify({ action: 'update_comment', id, status, token }),
   });
 }
 
 export function deleteComment(id: string) {
-  return fetchJson(`/admin/comments/${id}`, {
-    method: "DELETE",
+  const token = getToken();
+  return fetchJson({
+    method: "POST",
+    body: JSON.stringify({ action: 'delete_comment', id, token }),
   });
 }
 
@@ -69,26 +81,22 @@ export function updateModInfo(body: {
   version: string;
   install_instructions: string;
 }) {
-  return fetchJson("/admin/mod-info", {
-    method: "PUT",
-    body: JSON.stringify(body),
+  const token = getToken();
+  return fetchJson({
+    method: "POST",
+    body: JSON.stringify({ action: 'update_mod_info', ...body, token }),
   });
 }
 
 export function uploadModFile(downloadUrl: string) {
   const token = getToken();
-  const headers: Record<string, string> = {};
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-  
-  return fetch(`${API_BASE}/admin/upload-mod`, {
+  return fetch(`${SUPABASE_URL}/functions/v1/admin-api`, {
     method: "POST",
     headers: {
-      ...headers,
       "Content-Type": "application/json",
+      "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
     },
-    body: JSON.stringify({ downloadUrl }),
+    body: JSON.stringify({ action: 'update_download_url', downloadUrl, token }),
   }).then((res) => {
     if (!res.ok) {
       return res.json().then((err) => {
