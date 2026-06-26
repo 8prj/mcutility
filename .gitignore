@@ -11,6 +11,12 @@ dist
 dist-ssr
 *.local
 
+# Server directory (not needed for Vercel deployment)
+server/
+
+# Data directory (created at runtime)
+data/
+
 .vscode/*
 !.vscode/extensions.json
 .idea

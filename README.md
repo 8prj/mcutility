@@ -14,40 +14,22 @@ A full-stack Minecraft mod download website for a Fabric mod designed for DonutS
 ## Tech Stack
 
 - **Frontend**: React + TypeScript + Vite + TailwindCSS
-- **Backend**: Node.js + Express
-- **Database**: SQLite (better-sqlite3)
+- **Backend**: Vercel Serverless Functions
+- **Storage**: Vercel Blob Storage (for .jar files) + JSON files (for data)
 - **Styling**: TailwindCSS with custom Minecraft-themed CSS variables
 - **Font**: Press Start 2P (Google Fonts)
+- **Deployment**: Vercel
 
-## Setup Instructions
+## Local Development
 
 ### Prerequisites
 
 - Node.js (v18 or higher)
 - npm or yarn
 
-### Backend Setup
+### Setup
 
-1. Navigate to the server directory:
-```bash
-cd server
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Start the backend server:
-```bash
-npm start
-```
-
-The backend will run on `http://localhost:3001`
-
-### Frontend Setup
-
-1. Install frontend dependencies (from root directory):
+1. Install dependencies:
 ```bash
 npm install
 ```
@@ -64,7 +46,37 @@ The frontend will run on `http://localhost:5173`
 Create a `.env` file in the root directory (optional):
 
 ```env
-VITE_API_URL=http://localhost:3001/api
+VITE_API_URL=/api
+```
+
+## Deployment on Vercel
+
+### Prerequisites
+
+1. Push your code to GitHub
+2. Create a Vercel account at https://vercel.com
+3. Install Vercel CLI: `npm i -g vercel`
+
+### Deployment Steps
+
+1. **Deploy to Vercel:**
+```bash
+vercel
+```
+
+2. **Set up Vercel Blob Storage:**
+- Go to your Vercel project dashboard
+- Navigate to Storage → Blob
+- Create a new Blob store
+- Copy the `BLOB_READ_WRITE_TOKEN` from your environment variables
+
+3. **Add environment variables in Vercel:**
+- Go to your project settings → Environment Variables
+- Add: `BLOB_READ_WRITE_TOKEN` (from step 2)
+
+4. **Redeploy:**
+```bash
+vercel --prod
 ```
 
 ## Admin Access
@@ -77,11 +89,13 @@ VITE_API_URL=http://localhost:3001/api
 
 ```
 Mc-utilitys-main/
-├── server/
-│   ├── server.js          # Express backend with SQLite
-│   ├── uploads/           # Directory for uploaded .jar files
-│   ├── package.json        # Backend dependencies
-│   └── database.sqlite     # SQLite database (auto-created)
+├── api/
+│   ├── login.ts            # Admin login endpoint
+│   ├── mod-info.ts         # Mod info CRUD
+│   ├── comments.ts         # Public comments
+│   └── admin/
+│       ├── comments.ts     # Admin comment management
+│       └── upload-mod.ts   # File upload to Vercel Blob
 ├── src/
 │   ├── components/         # React components (Header, Footer)
 │   ├── lib/
@@ -89,8 +103,10 @@ Mc-utilitys-main/
 │   ├── pages/              # Page components (HomePage, Admin pages)
 │   ├── App.tsx             # Main app with routing
 │   └── index.css           # Global styles with CSS variables
+├── data/                   # JSON files for data storage (created at runtime)
 ├── index.html              # HTML entry point
-├── package.json            # Frontend dependencies
+├── package.json            # Dependencies
+├── vercel.json             # Vercel configuration
 └── vite.config.ts         # Vite configuration
 ```
 
@@ -104,9 +120,9 @@ Mc-utilitys-main/
 
 ### Admin Routes (requires authentication)
 - `GET /api/admin/comments` - Get all comments (pending + approved)
-- `PUT /api/admin/comments/:id` - Update comment status
-- `DELETE /api/admin/comments/:id` - Delete a comment
-- `PUT /api/admin/mod-info` - Update mod information
+- `PUT /api/admin/comments?id=xxx` - Update comment status
+- `DELETE /api/admin/comments?id=xxx` - Delete a comment
+- `PUT /api/mod-info` - Update mod information
 - `POST /api/admin/upload-mod` - Upload a new .jar mod file
 
 ## Security Features
@@ -115,16 +131,7 @@ Mc-utilitys-main/
 - XSS sanitization for all user-submitted comments
 - File upload validation (only .jar files allowed)
 - File size limit (10MB max)
-- CORS enabled for development
-
-## Building for Production
-
-1. Build the frontend:
-```bash
-npm run build
-```
-
-2. The Express backend will serve the built React app from the `dist` directory
+- Vercel Blob Storage for secure file hosting
 
 ## License
 
