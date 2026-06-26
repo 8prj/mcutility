@@ -89,5 +89,12 @@ export function uploadModFile(downloadUrl: string) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ downloadUrl }),
-  }).then((res) => res.json());
+  }).then((res) => {
+    if (!res.ok) {
+      return res.json().then((err) => {
+        throw new Error(err.error || 'Upload failed');
+      });
+    }
+    return res.json();
+  });
 }

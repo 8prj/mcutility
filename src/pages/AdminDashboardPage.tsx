@@ -105,13 +105,16 @@ export function AdminDashboardPage() {
 
     setUploadStatus("uploading");
     try {
-      await uploadModFile(url);
+      console.log("Uploading URL:", url);
+      const result = await uploadModFile(url);
+      console.log("Upload result:", result);
       setUploadStatus("success");
       setDownloadUrlInput("");
       setTimeout(() => setUploadStatus("idle"), 2000);
       // Reload mod info to get updated download URL
       loadData();
-    } catch {
+    } catch (error) {
+      console.error("Upload error:", error);
       setUploadStatus("error");
       setTimeout(() => setUploadStatus("idle"), 2000);
     }

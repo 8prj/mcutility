@@ -37,10 +37,16 @@ function writeModInfo(data) {
 const ADMIN_TOKEN = 'admin-session-token';
 
 export default async function handler(req, res) {
+  console.log('Upload endpoint called');
+  console.log('Method:', req.method);
+  console.log('Headers:', req.headers);
+  
   // Verify admin authentication
   const authHeader = req.headers.authorization || '';
   const token = authHeader.replace('Bearer ', '');
+  console.log('Token:', token);
   if (token !== ADMIN_TOKEN) {
+    console.log('Unauthorized - token mismatch');
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -50,6 +56,7 @@ export default async function handler(req, res) {
 
   try {
     const { downloadUrl } = req.body;
+    console.log('Download URL received:', downloadUrl);
     
     if (!downloadUrl) {
       return res.status(400).json({ error: 'Download URL is required' });
@@ -60,6 +67,7 @@ export default async function handler(req, res) {
     modInfo.download_url = downloadUrl;
     writeModInfo(modInfo);
     
+    console.log('Download URL updated successfully');
     res.status(200).json({ downloadUrl, filename: downloadUrl });
   } catch (error: any) {
     console.error('Upload error:', error);
